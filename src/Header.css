@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Mingzat&display=swap');
+
+:root {
+    --backgroundcolor: #E0F7FA;
+    --text: #2F4F4F;
+    --Highlight: #4c9e96;
+    --Error: #FF7043;
+    --Buttons: #4682B4;
+}
+
+.Header-main{
+    margin: 0px;
+    height: 10vh;
+    /* background-color: var(--backgroundcolor); */
+    display: flex;
+    justify-content: center;
+    align-items: center;  
+    font-size: xx-large;
+    font-family: "Work Sans", sans-serif;
+    font-weight: 430;
+    font-style: normal;
+}
+
+.Header-title-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;    
+}
