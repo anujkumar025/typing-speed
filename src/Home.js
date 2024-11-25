@@ -1,173 +1,286 @@
-import React, { useState, useEffect, useRef } from 'react';
-import './Home.css';
+import React, { useState, useEffect, useRef } from "react";
+import "./Home.css";
+import { random_words } from "./Helper";
 
 function Home() {
-    const text = ["In the heart of the forest, a small stream meandered through the trees. Its gentle gurgling was the only sound that accompanied the rustle of leaves underfoot.",
-      "A warm summer breeze brushed against the trees, rustling the leaves gently. The sky was painted with hues of orange and pink as the sun began to set. Birds chirped their evening songs, and the world seemed to slow down. It was a peaceful moment, one where everything felt in harmony, and time itself seemed to pause in reverence to the beauty around.",
-      "The quick brown fox jumps over the lazy dog. It was a bright, sunny day, and the fox was feeling particularly energetic. As it leaped over the dog, it felt the wind rush through its fur, invigorating its senses. The dog, on the other hand, barely stirred, content with its nap under the warm sun.",
-      "Technology has rapidly evolved, changing the way we live, work, and communicate. From smartphones to artificial intelligence, these advancements have made the world more connected and efficient. However, with these benefits come challenges, such as privacy concerns and the potential for job displacement. As we continue to innovate, it's crucial to find a balance that ensures progress while addressing these issues.",
-      "Beneath the canopy of stars, the campers gathered around the fire, sharing stories of adventures and dreams, their laughter echoing through the quiet night.",
-      "As the train sped through the countryside, fields of golden wheat stretched endlessly on either side. The passengers gazed out the windows, lost in thought, each on their own journey to unknown destinations.",
-      "The ancient tree stood tall, its gnarled roots twisting deep into the earth. Generations had passed beneath its branches, each one leaving a mark, a memory. Now, it was a silent witness to the passage of time, holding countless secrets.",
-      "The rain began to fall, softly at first, then in torrents, drenching the streets. People hurried for cover, their umbrellas struggling against the wind, as the storm intensified around them.",
-    ];
-    // const text = "In the heart of the forest.";
-    const [selected, setSelected] = useState(Math.floor(Math.random() * 8));
-    const [words, setWords] = useState(text[selected].split(' '));
-    const [currentWordIndex, setCurrentWordIndex] = useState(0);
-    const [currentPosition, setCurrentPosition] = useState(0);
-    const [userInput, setUserInput] = useState('');
-    const [status, setStatus] = useState(words.map(word => Array(word.length).fill(null)));
-    const [startTime, setStartTime] = useState('');
-    const [endTime, setEndTime] = useState('');
-    const [backCount, setBackCount] = useState(0);
-    const [finished, setFinished] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+  const [words, setWords] = useState([]);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [currentPosition, setCurrentPosition] = useState(0);
+  const [status, setStatus] = useState(
+    words.map((word) => Array(word.length).fill(null))
+  );
+  const [startTime, setStartTime] = useState("");
+  const [output, setOutput] = useState([-1, -1]); // stores [speed, accuracy]
+  const [finished, setFinished] = useState(false);
 
-    const inputRef = useRef(null);
+  const inputRef = useRef(null);
 
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-          const key = e.key;
-          const currentWord = words[currentWordIndex];
+  const getRandomWords = () => {
+    // Get a random number between 40 and 60
+    const numberOfWords = Math.floor(Math.random() * 21) + 5;
 
-        //   if(currentPosition >= text.length) return;
-          
-        if (!startTime && key.length === 1) {
-            setStartTime(Date.now());
-            console.log(text[selected].length);
+    // Shuffle the array
+    const shuffledWords = [...random_words].sort(() => 0.5 - Math.random());
+
+    // Select the first 'numberOfWords' from the shuffled array
+    const selectedWords = shuffledWords.slice(0, numberOfWords);
+    setStatus(selectedWords.map((word) => Array(word.length).fill(null)));
+
+    // Update the state with the selected words
+    setWords(selectedWords);
+  };
+
+  // Trigger getRandomWords on component mount
+  useEffect(() => {
+    getRandomWords();
+  }, []);
+
+  useEffect(() => {
+    if(!loggedIn){
+        return;
+    }
+    const handleKeyDown = (e) => {
+      const key = e.key;
+      const currentWord = words[currentWordIndex];
+      
+      // Ignore further key presses if the test is finished
+      if (finished) {
+          return;
         }
-          if(currentPosition < text[selected].length){
-    
-          // Handle backspace
-          if (key === 'Backspace') {
-            if (currentPosition > 0) {
-              setCurrentPosition(currentPosition - 1);
-    
-              // Reset the status of the previous character to null
-              const newStatus = [...status];
-              newStatus[currentWordIndex][currentPosition - 1] = null;
-              setStatus(newStatus);
-              setBackCount((backCount+1));
+        console.log(currentWordIndex, currentPosition);
+
+      if (!startTime && key.length === 1) {
+        setStartTime(Date.now());
+      }
+
+      if (currentPosition < words.length) {
+        // Handle backspace
+        if (key === "Backspace") {
+          if (currentPosition > 0) {
+            const newCurrentPos = currentPosition-1
+            setCurrentPosition(newCurrentPos);
+
+            const newStatus = [...status];
+            newStatus[currentWordIndex][newCurrentPos] = null;
+            setStatus(newStatus);
+        }
+    }
+    // Handle typing a character
+    else if (key.length === 1 && currentPosition < currentWord.length) {
+        if (key === currentWord[currentPosition]) {
+            const newStatus = [...status];
+            newStatus[currentWordIndex][currentPosition] = "correct";
+            setStatus(newStatus);
+            const tempCurrPos = currentPosition+1
+            setCurrentPosition(tempCurrPos);
+            
+            // If the last word is completed with a character, mark the test as finished
+            if (
+                currentWordIndex === words.length - 1 &&
+                tempCurrPos-1 === currentWord.length - 2
+            ) {
+                const eTimetemp = Date.now();
+                calcOutput(eTimetemp);
+                setFinished(true);
             }
-          } 
-          // Handle typing a character
-          else if (key.length === 1 && currentPosition < currentWord.length) {
-            if (key === currentWord[currentPosition]) {
+          } else {
               const newStatus = [...status];
-              newStatus[currentWordIndex][currentPosition] = 'correct';
+              newStatus[currentWordIndex][currentPosition] = "incorrect";
               setStatus(newStatus);
               setCurrentPosition(currentPosition + 1);
-              
-              if (currentWordIndex === words.length - 1 && currentPosition === currentWord.length - 1) {
-                  setEndTime(Date.now());
-                  setFinished(true);
-                }
             }
-            else {
-                const newStatus = [...status];
-                setCurrentPosition(currentPosition + 1);
-                newStatus[currentWordIndex][currentPosition] = 'incorrect';
-                setStatus(newStatus);
+        }
+        
+        if (key === " ") {
+        //   -----------------------------------------------------------------------
+          // If the user presses space before finishing the current word
+          if (currentPosition < currentWord.length-1) {
+            const newStatus = [...status];
+
+            // Mark remaining characters of the current word as incorrect
+            for (let i = currentPosition; i < currentWord.length; i++) {
+              newStatus[currentWordIndex][i] = "incorrect";
             }
+            setStatus(newStatus);
           }
-    
-          if (key === ' ') {
-                setCurrentWordIndex(currentWordIndex + 1);
-                setCurrentPosition(0);
-                setUserInput('');
-          }}
-        };
-    
-        document.addEventListener('keydown', handleKeyDown);
 
+          // Correctly typed space between words
+          if (currentPosition === currentWord.length) {
+            const newStatus = [...status];
+            if (currentWordIndex < words.length - 1) {
+              newStatus[currentWordIndex].push("correct"); // Mark space as correct
+            }
+            setStatus(newStatus);
+          }
 
-    
-        return () => {
-          document.removeEventListener('keydown', handleKeyDown);
-        };
-      }, [currentWordIndex, currentPosition, status, startTime]);
-    
-      const calculateTimeTaken = () => {
-        if (startTime && endTime) {
-          const timeTaken = (endTime - startTime) / 1000; // time in seconds
-          // console.log("back count"+backCount);
-          return timeTaken.toFixed(2);
-        }
-        return null;
-      };
+          // Check if this is the last word
+          if (currentWordIndex === words.length - 1) {
+            // End the test if the last word is reached and space is pressed
+            const eTimetemp = Date.now();
+            calcOutput(eTimetemp);
+            setFinished(true);
+          } else {
+            // Move to the next word only if there are more words left
+            const temp = currentWordIndex+1
+            setCurrentWordIndex(temp);
+            setCurrentPosition(0);
+          }
 
-      const handleStartOver = () => {
-        const newvalue = Math.floor(Math.random() * 8); 
-        if(selected === newvalue){
-          handleStartOver();
-        }
-        else{
-          setSelected(newvalue);
-          const newWords = text[newvalue].split(' '); 
-          setWords(newWords);
-          // console.log(newvalue);
-          setFinished(false);
-          setCurrentWordIndex(0);
-          setCurrentPosition(0);
-          setUserInput('');
-          setStatus(newWords.map(word => Array(word.length).fill(null)));
-          setStartTime(null);
-          setEndTime(null);
-          setBackCount(0);
-        }
-
-        if (inputRef.current) {
+          // Refocus input after space press
+          if (inputRef.current) {
             inputRef.current.focus();
+          }
+        //   ------------------------------------------------------------------------
         }
-      };
-    
-    return (
-        <div className='Home-main'> 
-            <div className='Home-container'>
-                <div className='Home-text-box'>
-                {words.map((word, wordIndex) => (
-                    <span key={wordIndex} style={{ marginRight: '8px' }}>
-                        {word.split('').map((char, charIndex) => (
-                        <span
-                            key={charIndex}
-                            style={{
-                            backgroundColor:
-                                status[wordIndex][charIndex] === 'incorrect'
-                                ? '#FF7043'
-                                : 'transparent',
-                            color: status[wordIndex][charIndex] === 'correct' ? '#80CBC4' : '#2F4F4F',
-                            textDecoration:
-                            wordIndex === currentWordIndex && charIndex === currentPosition
-                                ? 'underline'
-                                : 'none',
-                            }}
-                        >
-                            {char}
-                        </span>
-                        ))}
-                    </span>
-                    ))}
-                </div>
-                <div className='Home-input-box'>
-                    <input
-                        type="text"
-                        style={{ opacity: 0, position: 'absolute', left: '-9999px' }}
-                        value={userInput}
-                        onChange={() => {}}
-                        ref={inputRef}
-                        autoFocus
-                    />
-                    <button onClick={handleStartOver} id="bottone5">Start Over</button>
-                </div>
-                {(finished)? 
-                <div className='Home-result-box'>
-                    <label>Speed : <span>{Math.trunc((text[selected].length*60) / (calculateTimeTaken()*6))}</span> WPM</label><br/>
-                    <label>Accuracy : <span>{Math.trunc(((text[selected].length-backCount)*100) / text[selected].length)}</span> %</label>
-                </div>
-                 : <div></div>}
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [currentWordIndex, currentPosition, status, startTime, finished]);
+
+  const calcOutput = (eTime) => {
+    let correctCount = 0;
+    let totalChars = 0;
+    const timeTaken = ((eTime - startTime) / 1000).toFixed(2);
+
+    status.forEach((wordStatus, wordIndex) => {
+      wordStatus.forEach((charStatus) => {
+        totalChars++; // Count every character
+        if (charStatus === "correct") {
+          correctCount++;
+        }
+      });
+    });
+
+    totalChars--;
+
+    setOutput([ Math.trunc((totalChars * 60) / (timeTaken * 5)), Math.trunc((correctCount * 100) / totalChars)]);
+  }
+
+  const handleStartOver = () => {
+    getRandomWords();
+    setFinished(false);
+    setCurrentWordIndex(0);
+    setCurrentPosition(0);
+    setStartTime(null);
+    setOutput([-1, -1]);
+
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  const handleLogin = () =>{
+    setLoggedIn(true);
+    setFinished(false);
+    setCurrentWordIndex(0);
+    setCurrentPosition(0);
+    setStartTime(null);
+    setOutput([-1, -1]);
+
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }
+
+  return (
+    <div className="Home-main">
+        {!loggedIn && (
+            <div className="login-box">
+            <h2>Enter your Roll No.</h2>
+            <form onSubmit={handleLogin} className="form-login">
+                <input
+                    className="input-roll"
+                    type="text"
+                    placeholder="Roll No."
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                />
+                <button className="button-login">Login</button>
+            </form>
             </div>
+        )}
+        {(<div className="Home-main">
+        <div className={`Home-container ${loggedIn ? "": "blurred"}`}>
+            <div className="Home-text-box">
+            {words.map((word, wordIndex) => (
+                <span key={wordIndex}>
+                {word.split("").map((char, charIndex) => (
+                    <span
+                    key={charIndex}
+                    style={{
+                        backgroundColor:
+                        status[wordIndex][charIndex] === "incorrect"
+                            ? "#FF7043"
+                            : "transparent",
+                        color:
+                        status[wordIndex][charIndex] === "correct"
+                            ? "#80CBC4"
+                            : "#2F4F4F",
+                        textDecoration:
+                        wordIndex === currentWordIndex &&
+                        charIndex === currentPosition
+                            ? "underline"
+                            : "none",
+                    }}
+                    >
+                    {char}
+                    </span>
+                ))}
+                </span>
+            ))}
+            </div>
+            <div className="Home-input-box">
+            <input
+                type="text"
+                style={{ opacity: 0, position: "absolute", left: "-9999px" }}
+                onChange={() => {}}
+                ref={loggedIn? inputRef:null}
+                autoFocus
+            />
+            <button onClick={handleStartOver} id="bottone5">
+                Start Over
+            </button>
+            </div>
+            {finished ? (
+            <div className="Home-result-box">
+            {(output[0] !== -1)? 
+            <div>
+            {(output[1] >= 80) ? (
+                <>
+                    <label>
+                    Speed :{" "}
+                    <span>
+                        {output[0]}
+                    </span>{" "}
+                    WPM
+                    </label>
+                    <br />
+                    <label>
+                    Accuracy : <span>{output[1]}</span> %
+                    </label>
+                </>
+                ) : (
+                <div style={{ color: "red" }}>Your accuracy is below 80%.</div>
+                )}
+            </div>: 
+            <div>
+                wait
+            </div>}
+            </div>
+            ) : (
+            <div></div>
+            )}
         </div>
-    )
+        </div>)}
+    </div>
+  );
 }
 
 export default Home;

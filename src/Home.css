@@ -1,5 +1,64 @@
 @import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
+.blurred {
+    filter: blur(8px);
+}
+
+.login-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    width: 25vw;
+    height: 25vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    z-index: 10;
+}
+
+.login-box h2{
+    background-color: #fff;
+}
+
+.form-login{
+    width: 80%;
+    display: flex;
+    background-color: #fff;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.input-roll{
+    display: block;
+    width: 91.2%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.button-login {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.button-login:hover {
+    background-color: #0056b3;
+}
+  
+
 .Home-main{
     display: flex;
     justify-content: center;
@@ -7,7 +66,6 @@
 }
 
 .Home-container{
-    /* background-color: white; */
     width: 70vw;
     height: 70vh;
     padding: 12px;
