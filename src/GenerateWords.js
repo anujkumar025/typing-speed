@@ -119,8 +119,17 @@ const generatePracticeWords = (wrongWordsArray, slowWordsDict, totalWords) => {
       }
     }
     // console.log(practiceWords.slice(0, totalWords));
-  
-    return practiceWords.slice(0, totalWords);
+    
+    var newwords = practiceWords.slice(0, totalWords);
+    wrongWordsArray.forEach(wrongword =>{
+      newwords = [...newwords, wrongword];
+    })
+    const shuffledWords = [...newwords];
+    for (let i = shuffledWords.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledWords[i], shuffledWords[j]] = [shuffledWords[j], shuffledWords[i]];
+    }
+    return shuffledWords;
 };
 
 export default generatePracticeWords;

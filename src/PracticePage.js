@@ -146,6 +146,10 @@ function PracticePage({PracticeMode, setPracticeMode, loggedIn, setLoggedIn}) {
                   setCurrentWordIndex((prev) => prev + 1);
                   setCurrentPosition(0);
               }
+
+              if (inputRef.current) {
+                inputRef.current.focus();
+              }
           }
       }
   };
@@ -178,7 +182,7 @@ function PracticePage({PracticeMode, setPracticeMode, loggedIn, setLoggedIn}) {
 
   const handleStartOver = () => {
     const sloww = [slowWords];
-    const newwords = generatePracticeWords(wrongWords, sloww, 20); 
+    const newwords = generatePracticeWords(wrongWords, sloww, 15); 
     setStatus(newwords.map((word) => Array(word.length).fill(null)));
     setWords(newwords);
     setWrongWords([]);
