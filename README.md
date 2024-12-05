@@ -3,7 +3,7 @@
 
 This is a minimalistic web application built with React.js that allows users to test their typing speed in an intuitive and user-friendly environment. The app provides real-time feedback on typing accuracy, making it an effective tool for improving typing skills.
 
-## Deployment Link: [Link](https://verdant-lamington-38bb09.netlify.app/) 
+## Deployment Link: [Link](https://type-sprint-navy.vercel.app/) 
 
 ## Features
 
